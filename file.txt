@@ -48,20 +48,18 @@ to match this image exactly. Do not touch any other part of the page.
 
 git commit -m "landing: redesign hero section to match mockup"
 
-Add a modal to @templates/landing.html that opens when the user clicks
-"See how it works".
+Update @templates/landing.html to add a robust video modal for the existing "See how it works".
 
-Requirements:
-
-- Clicking "See how it works" opens a modal overlay
-- Modal contains an embedded YouTube video (use any placeholder YouTube URL
+- Clicking "See how it works" should open a centered modal overlay
+- Modal contains an embedded YouTube iframevideo (use any placeholder YouTube URL
 for now, I will replace it later)
-- Video should be playable inside the modal
-- Clicking the close button OR clicking outside the modal closes it
+- The video should autoplay when the modal opens
+- Clicking the close button should close the modal
+- Clicking outside the modal content (on the overlay/backdrop) should also close the modal
 - When the modal closes, the video must stop playing (not continue in background)
 - No page libraries or dependencies — vanilla JS only, since we are not
 using any JS framework in this project
-
-Do not modify any other part of the page.
+- Keep the implementation clean, accessible, and production-ready
+- Do not modify any unrelated sections, styles, layout, or functionality on the page
 
 git commit -m "landing: add youtube modal on see how it works click"
