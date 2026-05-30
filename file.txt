@@ -96,3 +96,17 @@ Follow the below instructions:
 14. Create and merge the PR
 15. Checkout to the main branch - `git checkout main`
 16. Delete the feature branch - `git branch -D feature/database-setup`
+
+---------------------------------------------------------------------
+After creating the specs i.e. 05-backend-routes-for-profile-page.md
+
+Use this prompt to create the backend routes for profile page.
+
+Read .claude/specs/05-backend-routes-for-profile-page.md and come up with an 
+implementation plan for adding the backend routes.
+While implementating the plan into code, split the work acrosss 3 
+parallel  subagents:-
+Subagent 1: Implement the transaction history routes
+Subagent 2: Implement the summary stats routes
+Subagent 3: Implement the category breakdown routes.
+Each Subagent should only modify its assigned section in app.py 
