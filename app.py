@@ -1,8 +1,9 @@
 import os
 import re
 import sqlite3
+from datetime import date, timedelta
 
-from flask import Flask, render_template, request, redirect, url_for, abort, session
+from flask import Flask, render_template, request, redirect, url_for, abort, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
@@ -122,12 +123,78 @@ def profile():
     initials = "".join(w[0].upper() for w in user_data["name"].split() if w)[:2]
     user = {**user_data, "initials": initials}
 
-    stats        = get_summary_stats(session["user_id"])
-    transactions = get_recent_transactions(session["user_id"])
-    categories   = get_category_breakdown(session["user_id"])
+    # Parse and validate date filter params
+    filter_from = None
+    filter_to   = None
+    raw_from = request.args.get("date_from", "").strip()
+    raw_to   = request.args.get("date_to",   "").strip()
+    try:
+        if raw_from:
+            filter_from = date.fromisoformat(raw_from)
+    except ValueError:
+        pass
+    try:
+        if raw_to:
+            filter_to = date.fromisoformat(raw_to)
+    except ValueError:
+        pass
 
-    return render_template("profile.html", user=user, stats=stats,
-                           transactions=transactions, categories=categories)
+    if filter_from and filter_to and filter_from > filter_to:
+        flash("Start date must be before end date.", "error")
+        filter_from = filter_to = None
+
+    # Preset date anchors
+    today = date.today()
+    this_month_start = today.replace(day=1)
+
+    m3, y3 = today.month - 3, today.year
+    if m3 <= 0:
+        m3 += 12
+        y3 -= 1
+    last_3_start = date(y3, m3, 1)
+
+    m6, y6 = today.month - 6, today.year
+    if m6 <= 0:
+        m6 += 12
+        y6 -= 1
+    last_6_start = date(y6, m6, 1)
+
+    # Determine which preset is active
+    active_preset = None
+    if filter_from == this_month_start and filter_to == today:
+        active_preset = "this_month"
+    elif filter_from == last_3_start and filter_to == today:
+        active_preset = "last_3"
+    elif filter_from == last_6_start and filter_to == today:
+        active_preset = "last_6"
+    elif filter_from is None and filter_to is None:
+        active_preset = "all_time"
+
+    preset_urls = {
+        "this_month": url_for("profile", date_from=this_month_start.isoformat(), date_to=today.isoformat()),
+        "last_3":     url_for("profile", date_from=last_3_start.isoformat(),     date_to=today.isoformat()),
+        "last_6":     url_for("profile", date_from=last_6_start.isoformat(),     date_to=today.isoformat()),
+        "all_time":   url_for("profile"),
+    }
+
+    df_str = filter_from.isoformat() if filter_from else None
+    dt_str = filter_to.isoformat()   if filter_to   else None
+
+    stats        = get_summary_stats(session["user_id"],       date_from=df_str, date_to=dt_str)
+    transactions = get_recent_transactions(session["user_id"], date_from=df_str, date_to=dt_str)
+    categories   = get_category_breakdown(session["user_id"],  date_from=df_str, date_to=dt_str)
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+        active_preset=active_preset,
+        preset_urls=preset_urls,
+        filter_from=filter_from.isoformat() if filter_from else "",
+        filter_to=filter_to.isoformat()     if filter_to   else "",
+    )
 
 
 @app.route("/expenses/add")

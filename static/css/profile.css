@@ -62,6 +62,101 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Filter bar                                                         */
+/* ------------------------------------------------------------------ */
+
+.profile-filter {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.25rem;
+}
+
+.filter-presets {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+}
+
+.filter-preset {
+    display: inline-block;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+    background: transparent;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.filter-preset:hover {
+    border-color: var(--ink-soft);
+    color: var(--ink);
+}
+
+.filter-preset--active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+}
+
+.filter-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: nowrap;
+    margin-left: auto;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border);
+}
+
+.filter-date-input {
+    padding: 0.22rem 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-date-input:focus {
+    border-color: var(--accent);
+}
+
+.filter-sep {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+}
+
+.filter-apply-btn {
+    padding: 0.22rem 0.75rem;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.filter-apply-btn:hover {
+    background: var(--ink);
+}
+
+/* ------------------------------------------------------------------ */
 /* Section 2: Summary stats                                           */
 /* ------------------------------------------------------------------ */
 
@@ -270,6 +365,20 @@
     .profile-hero {
         flex-direction: column;
         text-align: center;
+    }
+
+    .profile-filter {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-custom {
+        width: 100%;
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border);
     }
 }
 
