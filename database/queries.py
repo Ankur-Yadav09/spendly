@@ -28,23 +28,35 @@ def get_user_by_id(user_id):
         db.close()
 
 
-def get_summary_stats(user_id):
+def get_summary_stats(user_id, date_from=None, date_to=None):
     """Return dict with total_spent, transaction_count, top_category."""
     db = get_db()
     try:
-        cursor = db.execute(
-            "SELECT SUM(amount), COUNT(*) FROM expenses WHERE user_id = ?",
-            (user_id,),
-        )
+        sql = "SELECT SUM(amount), COUNT(*) FROM expenses WHERE user_id = ?"
+        params = [user_id]
+        if date_from:
+            sql += " AND date >= ?"
+            params.append(date_from)
+        if date_to:
+            sql += " AND date <= ?"
+            params.append(date_to)
+
+        cursor = db.execute(sql, tuple(params))
         row = cursor.fetchone()
         total_raw = row[0] if row[0] is not None else 0.0
         count = row[1] if row[1] is not None else 0
 
-        top_cursor = db.execute(
-            "SELECT category FROM expenses WHERE user_id = ?"
-            " GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
-            (user_id,),
-        )
+        top_sql = "SELECT category FROM expenses WHERE user_id = ?"
+        top_params = [user_id]
+        if date_from:
+            top_sql += " AND date >= ?"
+            top_params.append(date_from)
+        if date_to:
+            top_sql += " AND date <= ?"
+            top_params.append(date_to)
+        top_sql += " GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1"
+
+        top_cursor = db.execute(top_sql, tuple(top_params))
         top_row = top_cursor.fetchone()
         top_category = top_row["category"] if top_row is not None else "—"
 
@@ -63,15 +75,25 @@ def get_summary_stats(user_id):
         db.close()
 
 
-def get_recent_transactions(user_id, limit=10):
+def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
     """Return list of dicts ordered newest-first: date, description, category, amount."""
     db = get_db()
     try:
-        cursor = db.execute(
+        sql = (
             "SELECT date, description, category, amount FROM expenses"
-            " WHERE user_id = ? ORDER BY date DESC LIMIT ?",
-            (user_id, limit),
+            " WHERE user_id = ?"
         )
+        params = [user_id]
+        if date_from:
+            sql += " AND date >= ?"
+            params.append(date_from)
+        if date_to:
+            sql += " AND date <= ?"
+            params.append(date_to)
+        sql += " ORDER BY date DESC LIMIT ?"
+        params.append(limit)
+
+        cursor = db.execute(sql, tuple(params))
         rows = cursor.fetchall()
         results = []
         for row in rows:
@@ -95,15 +117,24 @@ def get_recent_transactions(user_id, limit=10):
         db.close()
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, date_from=None, date_to=None):
     """Return list of dicts ordered by amount desc: name, amount, percentage."""
     db = get_db()
     try:
-        cursor = db.execute(
+        sql = (
             "SELECT category, SUM(amount) AS total FROM expenses"
-            " WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-            (user_id,),
+            " WHERE user_id = ?"
         )
+        params = [user_id]
+        if date_from:
+            sql += " AND date >= ?"
+            params.append(date_from)
+        if date_to:
+            sql += " AND date <= ?"
+            params.append(date_to)
+        sql += " GROUP BY category ORDER BY total DESC"
+
+        cursor = db.execute(sql, tuple(params))
         rows = cursor.fetchall()
         if not rows:
             return []
